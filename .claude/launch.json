@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "frontend", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "web-prod",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "frontend", "exec", "next", "start", "-p", "3100"],
+      "port": 3100
+    },
+    {
+      "name": "api-workers",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "uv", "run", "--project", "backend", "uvicorn", "--app-dir", "backend", "app.main:app", "--port", "8001", "--workers", "4"],
+      "port": 8001
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "uv", "run", "--project", "backend", "uvicorn", "--app-dir", "backend", "app.main:app", "--port", "8000"],
+      "port": 8000
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Tokens SOON TRADE — source unique des couleurs, rayons et ombres.
+ * Valeurs de marque tirées de la planche « UI Branding Showcase » :
+ * primaire #6C3BFF, secondaire #00D1FF, accent #FF8A00, neutre #0F172A,
+ * fond #F5F7FB, surface #FFFFFF.
+ */
+:root {
+  --background: #f5f7fb;
+  --surface: #ffffff;
+  --surface-muted: #f1f3fa;
+  --foreground: #0f172a;
+  --muted-foreground: #566079;
+  --border: #e4e8f2;
+
+  --primary: #6c3bff;
+  --primary-hover: #5a2be6;
+  --primary-foreground: #ffffff;
+  --primary-soft: #efeaff;
+  --primary-soft-foreground: #4f24d6;
+
+  --secondary: #00d1ff;
+  --accent: #ff8a00;
+
+  --success-soft: #dcfce7;
+  --success-foreground: #166534;
+  --warning-soft: #ffedd5;
+  --warning-foreground: #9a3412;
+  --danger-soft: #fee2e2;
+  --danger-foreground: #991b1b;
+  --neutral-soft: #e9edf5;
+  --neutral-foreground: #3d475c;
+
+  --banner-from: #2a1470;
+  --banner-via: #5a2be6;
+  --banner-to: #8b66ff;
+
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(76 43 190 / 0.14);
+  --shadow-raised: 0 12px 32px -12px rgb(76 43 190 / 0.35);
+  --ring: #6c3bff;
+}
+
+.dark {
+  --background: #0a0f1f;
+  --surface: #121930;
+  --surface-muted: #19213b;
+  --foreground: #f1f4fb;
+  --muted-foreground: #a3adc6;
+  --border: #252e4a;
+
+  --primary: #8460ff;
+  --primary-hover: #9a7cff;
+  --primary-foreground: #ffffff;
+  --primary-soft: #261c52;
+  --primary-soft-foreground: #c9b8ff;
+
+  --success-soft: #0f3323;
+  --success-foreground: #86efac;
+  --warning-soft: #3d2410;
+  --warning-foreground: #fdba74;
+  --danger-soft: #3f1518;
+  --danger-foreground: #fca5a5;
+  --neutral-soft: #1f2843;
+  --neutral-foreground: #c2cae0;
+
+  --banner-from: #170b45;
+  --banner-via: #3d1fa8;
+  --banner-to: #6c3bff;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-raised: 0 12px 32px -12px rgb(108 59 255 / 0.5);
+  --ring: #a48bff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-success-soft: var(--success-soft);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-neutral-soft: var(--neutral-soft);
+  --color-neutral-foreground: var(--neutral-foreground);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-manrope), var(--font-inter), ui-sans-serif, sans-serif;
+
+  --radius-control: 0.75rem;
+  --radius-card: 1.25rem;
+  --radius-panel: 1.75rem;
+
+  --shadow-card: var(--shadow-card);
+  --shadow-raised: var(--shadow-raised);
+}
+
+@layer base {
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .bg-banner {
+    background:
+      radial-gradient(120% 140% at 100% 0%, rgb(0 209 255 / 0.22), transparent 55%),
+      linear-gradient(105deg, var(--banner-from), var(--banner-via) 55%, var(--banner-to));
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/*
+ * Blocs d'entrée animés : masqués jusqu'à ce que GSAP pose leur état de départ, pour éviter
+ * un flash avant l'hydratation. Filet : visibles d'office après 3 s si le script échoue.
+ */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  [data-m-pre] {
+    visibility: hidden;
+    animation: m-pre-fallback 0s 3s forwards;
+  }
+}
+
+@keyframes m-pre-fallback {
+  to {
+    visibility: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

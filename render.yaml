@@ -1,0 +1,43 @@
+# Plan de déploiement de l'API sur Render (Phase 12). Le site est déployé par Vercel.
+# Les valeurs secrètes ne sont jamais ici : « sync: false » les fait saisir dans Render.
+services:
+  - type: web
+    name: soontrade-api
+    runtime: python
+    rootDir: backend
+    region: frankfurt
+    plan: starter
+    buildCommand: pip install uv && uv sync --frozen --no-dev
+    # Migrations avant chaque mise en service : une version ne démarre que sur un schéma à jour.
+    preDeployCommand: uv run alembic upgrade head
+    # --proxy-headers : l'adresse réelle du client (journal d'audit, verrouillage de connexion).
+    startCommand: uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 2 --proxy-headers --forwarded-allow-ips '*'
+    healthCheckPath: /health/ready
+    autoDeploy: false
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PYTHON_VERSION
+        value: "3.14"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_ENDPOINT_URL
+        value: ""

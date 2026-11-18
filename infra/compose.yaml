@@ -1,0 +1,45 @@
+# Services de développement local. La production utilise Neon, Upstash et AWS S3.
+# `restart: unless-stopped` : ils repartent seuls quand Docker Desktop redémarre.
+name: soon-trade
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: soontrade
+      POSTGRES_PASSWORD: soontrade
+      POSTGRES_DB: soontrade
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U soontrade -d soontrade"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Port 6380 côté machine : 6379 est souvent déjà pris par un autre projet.
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Stockage compatible S3 pour les documents privés, en développement uniquement.
+  # shortcut: les fichiers ne survivent pas à la recréation du conteneur ; la
+  # production utilise un vrai bucket S3 privé.
+  s3:
+    image: adobe/s3mock
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9090:9090"
+
+volumes:
+  postgres-data:

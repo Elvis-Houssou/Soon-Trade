@@ -1,0 +1,10 @@
+packages:
+  - frontend
+
+# Scripts d'installation refusés explicitement : ces paquets livrent des binaires
+# précompilés, leur script n'est qu'un repli. Sans cette liste, pnpm échoue.
+allowBuilds:
+  "@parcel/watcher": false
+  "@swc/core": false
+  sharp: false
+  unrs-resolver: false

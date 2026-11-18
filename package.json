@@ -1,0 +1,19 @@
+{
+  "name": "soon-trade",
+  "private": true,
+  "packageManager": "pnpm@12.18.0",
+  "scripts": {
+    "dev:web": "pnpm --filter frontend dev",
+    "dev:api": "cd backend && uv run uvicorn app.main:app --reload --port 8000",
+    "db:up": "docker compose -f infra/compose.yaml up -d --wait",
+    "db:down": "docker compose -f infra/compose.yaml down",
+    "db:migrate": "cd backend && uv run alembic upgrade head",
+    "db:seed": "cd backend && uv run python -m app.seed",
+    "verify:api": "cd backend && uv run python scripts/verify_live.py .env",
+    "check:web": "pnpm --filter frontend lint && pnpm --filter frontend typecheck && pnpm --filter frontend test && pnpm --filter frontend build",
+    "check:api": "cd backend && uv run ruff check . && uv run ruff format --check . && uv run mypy app && uv run pytest",
+    "db:backup": "cd backend && uv run python scripts/backup.py save",
+    "db:restore": "cd backend && uv run python scripts/backup.py restore",
+    "load:api": "cd backend && uv run python scripts/load_test.py .env"
+  }
+}

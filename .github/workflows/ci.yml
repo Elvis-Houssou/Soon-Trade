@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter frontend lint
+      - run: pnpm --filter frontend typecheck
+      - run: pnpm --filter frontend test
+      - run: pnpm --filter frontend build
+
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: soontrade
+          POSTGRES_PASSWORD: soontrade
+          POSTGRES_DB: soontrade
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U soontrade -d soontrade"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy app
+      - run: uv run alembic upgrade head
+      - run: uv run pytest
+
+  # Phase 12 : aucun secret commité, aucune dépendance de production vulnérable connue.
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm audit --prod --audit-level high
+      - uses: astral-sh/setup-uv@v6
+      - name: Audit des dépendances Python de production
+        working-directory: backend
+        run: |
+          uv export --no-dev --format requirements-txt > /tmp/requirements.txt
+          uvx pip-audit -r /tmp/requirements.txt --disable-pip
