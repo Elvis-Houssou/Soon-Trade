@@ -8,6 +8,7 @@ from app.core.db import Base
 from app.modules.audit import models as _audit  # noqa: F401
 from app.modules.catalog import models as _catalog  # noqa: F401
 from app.modules.claims import models as _claims  # noqa: F401
+from app.modules.contact import models as _contact  # noqa: F401
 from app.modules.crm import models as _crm  # noqa: F401
 from app.modules.documents import models as _documents  # noqa: F401
 from app.modules.identity import models as _identity  # noqa: F401

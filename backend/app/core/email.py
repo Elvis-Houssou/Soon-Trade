@@ -30,7 +30,7 @@ def to_html(text: str) -> str:
     )
 
 
-def send_email(to: str, subject: str, text: str) -> None:
+def send_email(to: str, subject: str, text: str, reply_to: str | None = None) -> None:
     """Point d'envoi unique des e-mails transactionnels (README §17), en texte et en HTML."""
     settings = get_settings()
     if settings.brevo_api_key:
@@ -44,6 +44,7 @@ def send_email(to: str, subject: str, text: str) -> None:
                 "subject": subject,
                 "textContent": text,
                 "htmlContent": to_html(text),
+                **({"replyTo": {"email": reply_to}} if reply_to else {}),
             },
             timeout=10,
         )
@@ -63,6 +64,7 @@ def send_email(to: str, subject: str, text: str) -> None:
             "subject": subject,
             "text": text,
             "html": to_html(text),
+            **({"reply_to": reply_to} if reply_to else {}),
         },
         timeout=10,
     )

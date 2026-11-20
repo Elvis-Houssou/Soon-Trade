@@ -10,7 +10,8 @@ def test_brevo_payload(monkeypatch):
             pass
 
     monkeypatch.setattr(
-        email, "get_settings",
+        email,
+        "get_settings",
         lambda: Settings(brevo_api_key="k", email_from="SupportSoonTrade <moi@gmail.com>"),
     )
     monkeypatch.setattr(email.httpx, "post", lambda url, **kw: calls.append((url, kw)) or _Ok())

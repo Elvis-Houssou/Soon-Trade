@@ -18,6 +18,7 @@ PUBLIC = {
     ("POST", "/auth/password/reset"),
     ("GET", "/invitations/{token}"),
     ("POST", "/invitations/{token}/accept"),
+    ("POST", "/contact"),
 }
 ZERO = "00000000-0000-7000-8000-000000000000"
 

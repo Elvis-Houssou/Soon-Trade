@@ -7,6 +7,7 @@ from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
 from app.modules.catalog.router import router as catalog_router
 from app.modules.claims.router import router as claims_router
+from app.modules.contact.router import router as contact_router
 from app.modules.crm.router import router as crm_router
 from app.modules.documents.router import router as documents_router
 from app.modules.health.router import router as health_router
@@ -62,6 +63,7 @@ def create_app() -> FastAPI:
     app.include_router(notifications_router)
     app.include_router(crm_router)
     app.include_router(reporting_router)
+    app.include_router(contact_router)
     return app
 
 
