@@ -19,8 +19,16 @@ reste valable.
 
 ## Coût indicatif
 
-- Render : API, plan `0.5c-512mb` (environ 7 $ par mois) ; il faut un plan payant pour
-  les migrations automatiques.
+**Tout est gratuit pour démarrer.**
+
+- Render, plan `free` :
+  - l'API se met en veille après 15 min sans visite ; le réveil prend 30 à 60 s (voir
+    « Éviter la veille ») ;
+  - pas d'onglet Shell ;
+  - 0,1 processeur.
+
+  Passer au plan `0.5c-512mb` (environ 7 $ par mois) quand l'usage le justifiera : on change
+  `plan` dans `render.yaml`.
 - Neon : gratuit pour démarrer (0,5 Go). La base se met en veille après 5 min sans activité
   et se réveille en une seconde environ à la requête suivante.
 - Vercel Hobby : gratuit (Pro si usage commercial).
@@ -97,7 +105,8 @@ et point de terminaison laissé vide.)
    | `S3_BUCKET` | `soontrade-documents` |
    | `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | les valeurs de l'étape 1 |
 
-3. Valide. Render construit l'API, applique les migrations sur Neon, puis la démarre.
+3. Valide. Render construit l'API ; au démarrage, elle applique les migrations sur Neon, puis
+   accepte le trafic. Le premier démarrage prend une à deux minutes.
 4. Vérifie que `https://soontrade-api.onrender.com/health/ready` répond
    `{"status":"ok","database":"up"}`.
 
@@ -114,18 +123,38 @@ Vercel et redéploie le site.
 
 ## Étape 4 — Premier administrateur
 
-Les comptes de démonstration n'existent pas en production : `db:seed` y est refusé.
+Les comptes de démonstration n'existent pas en production : `db:seed` y est refusé. Le plan
+gratuit de Render n'a pas d'onglet Shell : la commande se lance **depuis ton ordinateur**,
+directement contre la base Neon, une fois l'API démarrée au moins une fois (les tables
+existent alors).
 
-1. Ouvre Render, puis le service `soontrade-api`, puis l'onglet **Shell**.
-2. Lance :
-   ```bash
-   uv run python -m app.cli invite-admin ton-adresse@exemple.com
-   ```
-3. La commande affiche le lien d'invitation, et l'e-mail part si Resend l'accepte. Sans
+Dans PowerShell, depuis le dossier du projet :
+
+```powershell
+cd backend
+$env:DATABASE_URL = "COLLE-ICI-L-ADRESSE-NEON-DIRECTE"
+$env:FRONTEND_URL = "https://soon-trade.vercel.app"
+python -m uv run python -m app.cli invite-admin ton-adresse@exemple.com
+Remove-Item Env:DATABASE_URL, Env:FRONTEND_URL
+```
+
+1. La commande affiche le lien d'invitation, et l'e-mail part si Resend l'accepte. Sans
    domaine vérifié, Resend n'envoie qu'à l'adresse de ton compte Resend : invite cette
    adresse-là.
-4. Ouvre le lien, choisis ton mot de passe : tu es administrateur. Invite ensuite l'équipe
+2. La dernière ligne efface l'adresse de la base de la session PowerShell : rien n'est
+   écrit dans un fichier.
+3. Ouvre le lien, choisis ton mot de passe : tu es administrateur. Invite ensuite l'équipe
    depuis **Utilisateurs et permissions**.
+
+## Éviter la veille (plan gratuit)
+
+Après 15 min sans visite, Render endort l'API. La première page suivante attend son réveil
+(30 à 60 s) et peut afficher une erreur : il suffit alors de recharger.
+
+Pour l'éviter, une sonde gratuite (UptimeRobot, Better Stack…) peut appeler
+`https://soontrade-api.onrender.com/health` toutes les 10 minutes. Elle sert en même temps
+d'alerte de disponibilité. Les 750 heures gratuites mensuelles de Render couvrent un service
+allumé en continu.
 
 ## Étape 5 — Vérifications
 
@@ -138,8 +167,8 @@ Les comptes de démonstration n'existent pas en production : `db:seed` y est ref
 ## Mises à jour
 
 `autoDeploy` est désactivé sur Render. Une fois `main` poussée et la CI verte :
-- **Render** : **Manual Deploy → Deploy latest commit** ; les migrations passent avant le
-  démarrage.
+- **Render** : **Manual Deploy → Deploy latest commit** ; les migrations passent au démarrage,
+  avant d'accepter le trafic.
 - **Vercel** : déploie seul à chaque push ; on peut le désactiver dans **Settings → Git**.
 
 **Retour arrière** :

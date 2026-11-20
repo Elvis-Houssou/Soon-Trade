@@ -7,12 +7,14 @@ services:
     runtime: python
     rootDir: backend
     region: frankfurt
-    # Plan payant : nécessaire pour preDeployCommand (migrations avant mise en service).
-    plan: 0.5c-512mb
+    # Plan gratuit : mise en veille après 15 min sans visite (réveil en 30 à 60 s), pas de Shell
+    # ni de preDeployCommand. Passer à « 0.5c-512mb » quand l'usage le justifiera.
+    plan: free
     buildCommand: pip install uv && uv sync --frozen --no-dev
-    preDeployCommand: uv run alembic upgrade head
+    # Migrations au démarrage, avant d'accepter du trafic : une version ne sert jamais un schéma
+    # périmé (le plan gratuit n'a pas d'étape « preDeploy »). Un seul processus : 0,1 processeur.
     # --proxy-headers : l'adresse réelle du client (journal d'audit), transmise par Vercel puis Render.
-    startCommand: uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 2 --proxy-headers --forwarded-allow-ips '*'
+    startCommand: uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips '*'
     healthCheckPath: /health/ready
     autoDeploy: false
     envVars:
