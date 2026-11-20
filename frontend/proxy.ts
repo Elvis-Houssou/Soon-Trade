@@ -28,5 +28,5 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   // Tout sauf les fichiers statiques et les routes internes de Next.
-  matcher: "/((?!api|_next|_vercel|.*\\..*).*)",
+  matcher: "/((?!api|_next|_vercel|apple-icon|.*\\..*).*)",
 };
