@@ -4,7 +4,7 @@
 
 | Donnée | Où | Comment | Rétention proposée (À VALIDER) |
 |---|---|---|---|
-| Base PostgreSQL | Neon | Sauvegarde continue, restauration à la seconde (PITR) | 7 jours (offre Launch) à 30 jours |
+| Base PostgreSQL | Render | Sauvegarde continue, restauration à un instant donné (onglet Recovery) | selon le plan Render (7 jours et plus sur les plans payants) |
 | Base PostgreSQL | Hors hébergeur | `scripts/backup.py save`, chaque semaine | 12 semaines, stockage chiffré séparé |
 | Documents | S3 | Versionnage du bucket + réplication vers une autre région | 90 jours de versions |
 | Configuration | Render, Vercel | Variables saisies dans chaque service, recopiées dans un coffre de mots de passe | — |

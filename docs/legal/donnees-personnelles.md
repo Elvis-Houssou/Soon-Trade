@@ -28,8 +28,8 @@ mémorisé dans le navigateur (stockage local) sont utilisés.
 
 | Sous-traitant | Rôle | Localisation (À VÉRIFIER selon l'offre retenue) |
 |---|---|---|
-| Neon | Base de données | UE |
-| Amazon Web Services | Stockage des documents | UE (eu-west-3, Paris) |
+| Render | Base de données | UE (Francfort) |
+| Cloudflare R2 (ou AWS S3) | Stockage des documents | UE (juridiction UE à activer sur R2 ; eu-west-3 sur AWS) |
 | Render | Hébergement de l'API | UE (Francfort) |
 | Vercel | Hébergement du site | Réseau mondial |
 | Resend | Envoi des e-mails | États-Unis |

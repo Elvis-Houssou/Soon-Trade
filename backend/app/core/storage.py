@@ -21,9 +21,9 @@ def _client() -> Any:
         aws_secret_access_key=settings.s3_secret_access_key,
         config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
     )
-    if settings.s3_endpoint_url:
-        # Émulateur local : le bucket est créé à la volée. En production il existe déjà,
-        # privé, et l'application n'a pas le droit d'en créer.
+    if settings.environment in ("local", "test"):
+        # Émulateur local : le bucket est créé à la volée. Hors développement (S3, ou R2
+        # via S3_ENDPOINT_URL) il existe déjà, privé, et la clé n'a pas le droit d'en créer.
         try:
             client.create_bucket(Bucket=settings.s3_bucket)
         except ClientError as error:

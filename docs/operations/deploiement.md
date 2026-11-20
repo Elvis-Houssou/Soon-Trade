@@ -1,67 +1,150 @@
-# Déploiement — préproduction et production
+# Déploiement sur Vercel (site) et Render (API et base)
 
-> Plan prêt à l'emploi, **pas encore exécuté** : les comptes Render, Neon, AWS et le nom de
-> domaine sont à créer. Les valeurs secrètes se saisissent dans chaque hébergeur, jamais
-> dans le dépôt.
+Tout ce qui se configure dans le dépôt est prêt : `render.yaml` (API et PostgreSQL),
+`frontend/next.config.ts` (relais `/api`, en-têtes de sécurité). Restent les comptes et les
+clés, que **toi seul** saisis dans chaque service. Aucune clé ne va dans le dépôt.
 
-## Architecture cible
+## Comment ça s'articule
 
-| Élément | Service | Rôle |
-|---|---|---|
-| Site (Next.js) | Vercel | Pages, en-têtes de sécurité (`frontend/next.config.ts`) |
-| API (FastAPI) | Render, `render.yaml` | 2 processus, migrations avant chaque mise en service |
-| Base PostgreSQL | Neon | Sauvegarde continue (PITR) |
-| Documents | AWS S3, bucket privé | Liens de téléchargement signés, 120 s |
-| E-mails | Resend, domaine vérifié | Transactionnels, fr / en / de |
-| DNS et TLS | Cloudflare | Certificats, protection DDoS |
+```
+Navigateur ──► soon-trade.vercel.app ──(/api/*)──► soontrade-api.onrender.com ──► PostgreSQL Render
+                                                                            └──► Stockage R2 ou S3
+```
 
-Deux environnements identiques : **préproduction** (`staging`) puis **production**. Chacun
-a sa base, son bucket, sa clé Resend et ses comptes.
+Le navigateur ne parle **qu'au site Vercel** : Vercel relaie `/api/*` vers Render. Sans ce
+relais, le site (`vercel.app`) et l'API (`onrender.com`) seraient deux sites différents, et
+les navigateurs n'enverraient pas le cookie de session à l'API : la connexion ne tiendrait
+pas. Avec un nom de domaine (ex. `app.soontrade.com` et `api.soontrade.com`), le relais
+reste valable.
 
-## Garde-fous automatiques
+## Coût indicatif
 
-L'API **refuse de démarrer** en `staging` ou `production` si :
-- `FRONTEND_URL` n'est pas en https ;
-- `CORS_ORIGINS` est vide, contient `*` ou une origine http ;
-- `DATABASE_URL` pointe vers une base locale ;
-- `RESEND_API_KEY` manque ;
-- S3 utilise l'émulateur local ou ses clés factices ;
-- `SEED_PASSWORD` est défini.
+- Render :
+  - API, plan `0.5c-512mb` (environ 7 $ par mois) : il faut un plan payant pour les
+    migrations automatiques ;
+  - PostgreSQL, plan `0.1c-256mb` (environ 6 $ par mois).
+- Vercel Hobby : gratuit (Pro si usage commercial).
+- Cloudflare R2 : gratuit jusqu'à 10 Go.
+- Resend : gratuit jusqu'à 3 000 e-mails par mois.
 
-Les règles sont dans `backend/app/core/hardening.py` et sont testées.
+## Étape 1 — Stockage des documents (Cloudflare R2, le plus simple)
 
-## Variables
+1. Crée un compte Cloudflare, puis ouvre **R2** et crée un bucket `soontrade-documents`
+   (accès public : **désactivé**).
+2. Va dans **R2 → Gérer les jetons d'API** et crée un jeton :
+   - permission « Lecture et écriture d'objets » ;
+   - limité à ce bucket.
+3. Note quatre valeurs :
+   - l'ID de clé d'accès ;
+   - la clé secrète ;
+   - le point de terminaison : `https://<id-compte>.r2.cloudflarestorage.com` ;
+   - le nom du bucket.
 
-**API** (Render) : `ENVIRONMENT`, `DATABASE_URL`, `CORS_ORIGINS` (ex.
-`["https://app.soontrade.com"]`), `FRONTEND_URL`, `RESEND_API_KEY`, `EMAIL_FROM`,
-`S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT_URL`
-vide.
+(Avec AWS S3 à la place : bucket privé en `eu-west-3`, utilisateur IAM limité à ce bucket,
+et point de terminaison laissé vide.)
 
-**Site** (Vercel) : `NEXT_PUBLIC_API_URL` (ex. `https://api.soontrade.com`). Rien d'autre :
-tout ce qui commence par `NEXT_PUBLIC_` est public.
+## Étape 2 — Site sur Vercel
 
-## Mise en service, dans l'ordre
+1. Va sur vercel.com, choisis **Add New → Project**, puis importe le dépôt GitHub
+   `Elvis-Houssou/Soon-Trade`.
+2. Réglages du projet :
+   - **Root Directory** : `frontend` (Vercel installe tout de même depuis la racine du
+     monorepo) ;
+   - **Framework** : Next.js (détecté).
+3. Variables d'environnement (Production) :
 
-1. Neon : créer la base, copier l'URL de connexion (`postgresql+psycopg://…?sslmode=require`).
-2. AWS : bucket privé (accès public bloqué, chiffrement par défaut, versionnage activé),
-   utilisateur IAM limité à ce bucket (`s3:GetObject`, `s3:PutObject`).
-3. Resend : vérifier le domaine (enregistrements DNS) ; créer une clé « Sending access »
-   limitée à ce domaine.
-4. Render : « New Blueprint » sur le dépôt → `render.yaml` ; saisir les variables secrètes.
-5. Vercel : importer le dépôt, dossier `frontend`, variable `NEXT_PUBLIC_API_URL`.
-6. Cloudflare : `app.` → Vercel, `api.` → Render ; TLS « Full (strict) » ; HSTS activé.
-7. Vérifier : `GET https://api…/health/ready` répond `{"status":"ok","database":"up"}` ;
-   lancer `pnpm verify:api` contre la préproduction (adapter l'adresse dans le script).
-8. Créer le premier administrateur interne (invitation), **ne jamais** lancer `db:seed`.
+   | Nom | Valeur |
+   |---|---|
+   | `NEXT_PUBLIC_API_URL` | `/api` |
+   | `API_PROXY_TARGET` | `https://soontrade-api.onrender.com` (adresse de l'étape 3) |
+   | `ENABLE_EXPERIMENTAL_COREPACK` | `1` (pour utiliser le pnpm 12 épinglé du projet) |
 
-## Mise à jour
+4. Lance **Deploy**, puis note l'adresse du site (ex. `https://soon-trade.vercel.app`).
+   Tant que l'API n'est pas en ligne, seules les pages publiques fonctionnent : c'est
+   normal.
 
-`autoDeploy` est désactivé : chaque version se déploie à la main, d'abord en
-préproduction, puis en production après vérification. Les migrations Alembic tournent
-avant le démarrage (`preDeployCommand`) ; une migration qui échoue bloque la version.
+## Étape 3 — API et base sur Render
 
-## Retour arrière
+1. Va sur render.com, choisis **New → Blueprint**, puis sélectionne le dépôt. Render lit
+   `render.yaml` et propose :
+   - la base `soontrade-db` ;
+   - le service `soontrade-api`.
+2. Render demande les valeurs marquées `sync: false` :
 
-Render : « Rollback » vers la version précédente. Si une migration a modifié le schéma,
-restaurer la base au moment voulu (Neon, restauration à un instant donné) **avant** de
-relancer l'ancienne version. Voir `sauvegardes.md`.
+   | Nom | Valeur |
+   |---|---|
+   | `FRONTEND_URL` | `https://soon-trade.vercel.app` (adresse de l'étape 2) |
+   | `CORS_ORIGINS` | `["https://soon-trade.vercel.app"]` |
+   | `RESEND_API_KEY` | ta clé Resend (de préférence une nouvelle, propre à la production) |
+   | `EMAIL_FROM` | `SupportSoonTrade <onboarding@resend.dev>` tant qu'aucun domaine n'est vérifié |
+   | `S3_ENDPOINT_URL` | `https://<id-compte>.r2.cloudflarestorage.com` (vide pour AWS) |
+   | `S3_REGION` | `auto` pour R2 (`eu-west-3` pour AWS) |
+   | `S3_BUCKET` | `soontrade-documents` |
+   | `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | les valeurs de l'étape 1 |
+
+3. Valide. Render crée la base, construit l'API, applique les migrations, puis la démarre.
+4. Vérifie que `https://soontrade-api.onrender.com/health/ready` répond
+   `{"status":"ok","database":"up"}`.
+
+**Si l'API refuse de démarrer**, ses journaux affichent « Configuration refusée : … » avec
+la liste des réglages à corriger :
+- une adresse en http au lieu de https ;
+- une clé manquante ;
+- les clés S3 de l'émulateur local.
+
+Ce garde-fou est volontaire.
+
+Si l'adresse Render n'est pas `soontrade-api.onrender.com`, corrige `API_PROXY_TARGET` sur
+Vercel et redéploie le site.
+
+## Étape 4 — Premier administrateur
+
+Les comptes de démonstration n'existent pas en production : `db:seed` y est refusé.
+
+1. Ouvre Render, puis le service `soontrade-api`, puis l'onglet **Shell**.
+2. Lance :
+   ```bash
+   uv run python -m app.cli invite-admin ton-adresse@exemple.com
+   ```
+3. La commande affiche le lien d'invitation, et l'e-mail part si Resend l'accepte. Sans
+   domaine vérifié, Resend n'envoie qu'à l'adresse de ton compte Resend : invite cette
+   adresse-là.
+4. Ouvre le lien, choisis ton mot de passe : tu es administrateur. Invite ensuite l'équipe
+   depuis **Utilisateurs et permissions**.
+
+## Étape 5 — Vérifications
+
+1. Ouvre le site, connecte-toi, et contrôle que la session tient d'une page à l'autre.
+2. Dépose un document (Organisation → Documents), puis rouvre-le : cela vérifie le
+   stockage.
+3. Crée un acheteur et un fournisseur depuis l'espace interne, puis fais un parcours
+   complet : demande, sollicitation, offre, proposition, commande.
+
+## Mises à jour
+
+`autoDeploy` est désactivé sur Render. Une fois `main` poussée et la CI verte :
+- **Render** : **Manual Deploy → Deploy latest commit** ; les migrations passent avant le
+  démarrage.
+- **Vercel** : déploie seul à chaque push ; on peut le désactiver dans **Settings → Git**.
+
+**Retour arrière** :
+- Render : **Rollback** vers la version précédente.
+- Vercel : **Promote** d'un déploiement antérieur.
+- Si une migration a modifié le schéma, restaure d'abord la base à l'instant voulu
+  (**Render → soontrade-db → Recovery**). Voir `sauvegardes.md`.
+
+## Plus tard : nom de domaine
+
+1. Achète le domaine, puis pointe `app.` vers Vercel et `api.` vers Render.
+2. Vérifie le domaine dans Resend et mets
+   `EMAIL_FROM=SupportSoonTrade <support@ton-domaine>`.
+3. Remplace l'adresse `vercel.app` par la nouvelle dans `FRONTEND_URL` et `CORS_ORIGINS`
+   (Render), puis l'adresse Render dans `API_PROXY_TARGET` (Vercel).
+
+## Limites connues
+
+- Les documents passent par le relais Vercel. Si un dépôt proche de la limite de 10 Mo
+  échoue en production, abaisser `DOCUMENT_MAX_BYTES` ou faire déposer les fichiers
+  directement sur R2 par lien signé : **À VÉRIFIER** au premier essai réel.
+- Les e-mails ne partent qu'à l'adresse du compte Resend tant que le domaine n'est pas
+  vérifié.

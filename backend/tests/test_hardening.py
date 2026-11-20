@@ -87,3 +87,12 @@ def test_production_refuses_dangerous_settings():
     )
     assert production_problems(safe) == []
     assert production_problems(Settings(environment="local")) == []
+
+
+@pytest.mark.parametrize(
+    "given", ["postgres://u:p@db.internal/soontrade", "postgresql://u:p@db.internal/soontrade"]
+)
+def test_hosted_database_urls_use_psycopg(given):
+    # Render et Neon fournissent ces formes ; le pilote installé est psycopg 3.
+    assert Settings(database_url=given).database_url == "postgresql+psycopg://u:p@db.internal/soontrade"
+    assert Settings(database_url="postgresql+psycopg://x").database_url == "postgresql+psycopg://x"

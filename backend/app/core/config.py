@@ -2,6 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
@@ -40,6 +41,15 @@ class Settings(BaseSettings):
     password_reset_minutes: int = 30
     login_max_failures: int = 5
     login_lockout_minutes: int = 15
+
+    @field_validator("database_url")
+    @classmethod
+    def _psycopg_driver(cls, value: str) -> str:
+        """Les hébergeurs donnent « postgres:// » ou « postgresql:// » ; le pilote installé est psycopg 3."""
+        for prefix in ("postgres://", "postgresql://"):
+            if value.startswith(prefix):
+                return "postgresql+psycopg://" + value[len(prefix) :]
+        return value
 
     @property
     def secure_cookies(self) -> bool:

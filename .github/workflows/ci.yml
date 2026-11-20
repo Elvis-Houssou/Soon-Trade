@@ -65,10 +65,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: pnpm/action-setup@v4
+      # Sans cache : rien n'est installé ici, l'audit ne lit que le fichier de verrouillage.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
       - run: pnpm audit --prod --audit-level high
       - uses: astral-sh/setup-uv@v6
       - name: Audit des dépendances Python de production

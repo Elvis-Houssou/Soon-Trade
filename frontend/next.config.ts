@@ -2,7 +2,11 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const production = process.env.NODE_ENV === "production";
-const apiOrigin = new URL(process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").origin;
+const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// En ligne, l'API passe par le même domaine que le site (« /api », relayé vers Render) :
+// le cookie de session reste alors un cookie du site, que les navigateurs envoient toujours.
+const apiOrigin = apiUrl.startsWith("/") ? "" : new URL(apiUrl).origin;
+const apiProxyTarget = process.env.API_PROXY_TARGET;
 
 // CSP sans nonce (guide Next « Without Nonces ») : les pages restent statiques et en cache.
 // shortcut: 'unsafe-inline' pour les scripts d'hydratation ; passer aux nonces si une
@@ -13,7 +17,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' blob: data:",
   "font-src 'self'",
-  `connect-src 'self' ${apiOrigin}`,
+  `connect-src 'self' ${apiOrigin}`.trim(),
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -40,6 +44,9 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  async rewrites() {
+    return apiProxyTarget ? [{ source: "/api/:path*", destination: `${apiProxyTarget}/:path*` }] : [];
   },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];

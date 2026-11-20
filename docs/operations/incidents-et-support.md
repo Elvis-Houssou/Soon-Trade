@@ -31,7 +31,7 @@
 |---|---|---|
 | Clé Resend | Resend → nouvelle clé → Render | Aucun |
 | Clés S3 | AWS IAM → nouvelle clé → Render → supprimer l'ancienne | Aucun |
-| Mot de passe de la base | Neon → Render (`DATABASE_URL`) | Redémarrage de l'API |
+| Mot de passe de la base | Render → soontrade-db (rotation des identifiants) ; `DATABASE_URL` suit seule | Redémarrage de l'API |
 | Sessions des utilisateurs | Désactiver puis réactiver le compte | Reconnexion demandée |
 
 ## Support aux utilisateurs

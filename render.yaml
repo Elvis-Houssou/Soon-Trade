@@ -1,43 +1,54 @@
-# Plan de déploiement de l'API sur Render (Phase 12). Le site est déployé par Vercel.
+# Déploiement de l'API et de sa base sur Render (Blueprint). Le site est déployé par Vercel.
 # Les valeurs secrètes ne sont jamais ici : « sync: false » les fait saisir dans Render.
+# Version de Python : backend/.python-version (3.14, dernier correctif choisi par Render).
+databases:
+  - name: soontrade-db
+    plan: 0.1c-256mb
+    region: frankfurt
+    databaseName: soontrade
+    user: soontrade
+
 services:
   - type: web
     name: soontrade-api
     runtime: python
     rootDir: backend
     region: frankfurt
-    plan: starter
+    # Plan payant : nécessaire pour preDeployCommand (migrations avant mise en service).
+    plan: 0.5c-512mb
     buildCommand: pip install uv && uv sync --frozen --no-dev
-    # Migrations avant chaque mise en service : une version ne démarre que sur un schéma à jour.
     preDeployCommand: uv run alembic upgrade head
-    # --proxy-headers : l'adresse réelle du client (journal d'audit, verrouillage de connexion).
+    # --proxy-headers : l'adresse réelle du client (journal d'audit), transmise par Vercel puis Render.
     startCommand: uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 2 --proxy-headers --forwarded-allow-ips '*'
     healthCheckPath: /health/ready
     autoDeploy: false
     envVars:
       - key: ENVIRONMENT
         value: production
-      - key: PYTHON_VERSION
-        value: "3.14"
       - key: LOG_LEVEL
         value: INFO
       - key: DATABASE_URL
+        fromDatabase:
+          name: soontrade-db
+          property: connectionString
+      # Adresse du site Vercel, ex. https://soon-trade.vercel.app (et la même entre ["…"] pour CORS).
+      - key: FRONTEND_URL
         sync: false
       - key: CORS_ORIGINS
         sync: false
-      - key: FRONTEND_URL
-        sync: false
       - key: RESEND_API_KEY
         sync: false
+      # Sans domaine vérifié : « SupportSoonTrade <onboarding@resend.dev> » (envoi au seul titulaire du compte Resend).
       - key: EMAIL_FROM
         sync: false
-      - key: S3_BUCKET
+      # Stockage des documents : AWS S3 (endpoint vide) ou Cloudflare R2 (endpoint https, région « auto »).
+      - key: S3_ENDPOINT_URL
         sync: false
       - key: S3_REGION
+        sync: false
+      - key: S3_BUCKET
         sync: false
       - key: S3_ACCESS_KEY_ID
         sync: false
       - key: S3_SECRET_ACCESS_KEY
         sync: false
-      - key: S3_ENDPOINT_URL
-        value: ""

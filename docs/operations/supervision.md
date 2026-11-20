@@ -21,7 +21,7 @@
 | Erreurs serveur | Journaux Render → outil de logs | plus de 1 % de 5xx sur 5 min |
 | Lenteur | Journaux (`duration_ms`) | 95e centile au-delà de 800 ms sur 10 min |
 | E-mails en échec | Journaux (`*_email_failed`) | toute occurrence en production |
-| Base | Tableau de bord Neon | stockage au-delà de 80 %, connexions saturées |
+| Base | Tableau de bord Render (soontrade-db) | stockage au-delà de 80 %, connexions saturées |
 
 Suivi d'erreurs détaillé : brancher Sentry (ou équivalent) côté API et site une fois le
 compte créé ; ne jamais y envoyer de corps de requête (données personnelles).

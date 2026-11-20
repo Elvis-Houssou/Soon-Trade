@@ -30,7 +30,7 @@ def invite_admin(email: str) -> str:
             session, email=email, organization=organization, role="admin", invited_by=None, ip=None
         )
         session.commit()
-    return f"{get_settings().frontend_url}/invitation/{token}"
+    return f"{get_settings().frontend_url}/fr/invitation/{token}"
 
 
 if __name__ == "__main__":
@@ -38,7 +38,5 @@ if __name__ == "__main__":
         sys.exit(__doc__)
     configure_logging("WARNING")
     link = invite_admin(sys.argv[2])
-    if get_settings().environment == "local":
-        print(f"Lien d'invitation (développement local) : {link}")
-    else:
-        print("Invitation envoyée par e-mail.")
+    # Lien personnel : à transmettre uniquement à la personne invitée, il expire en 7 jours.
+    print(f"Invitation créée (e-mail envoyé si Resend l'accepte). Lien direct : {link}")
