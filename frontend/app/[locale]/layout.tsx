@@ -21,6 +21,15 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
   return {
     title: { default: "SOON TRADE", template: "%s · SOON TRADE" },
     description: t("description"),
+    // Icônes de la planche de marque : clair ou sombre selon le thème du navigateur, dégradé sur l'écran d'accueil.
+    icons: {
+      icon: [
+        { url: "/brand/icons/icon.svg", type: "image/svg+xml" },
+        { url: "/brand/icons/icon-light-32.png", sizes: "32x32", media: "(prefers-color-scheme: light)" },
+        { url: "/brand/icons/icon-dark-32.png", sizes: "32x32", media: "(prefers-color-scheme: dark)" },
+      ],
+      apple: "/brand/icons/icon-gradient-180.png",
+    },
   };
 }
 
