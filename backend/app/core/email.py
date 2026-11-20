@@ -1,6 +1,7 @@
 import html
 import logging
 import re
+from email.utils import parseaddr
 
 import httpx
 
@@ -32,9 +33,25 @@ def to_html(text: str) -> str:
 def send_email(to: str, subject: str, text: str) -> None:
     """Point d'envoi unique des e-mails transactionnels (README §17), en texte et en HTML."""
     settings = get_settings()
+    if settings.brevo_api_key:
+        name, address = parseaddr(settings.email_from)
+        response = httpx.post(
+            "https://api.brevo.com/v3/smtp/email",
+            headers={"api-key": settings.brevo_api_key},
+            json={
+                "sender": {"name": name or "SOON TRADE", "email": address},
+                "to": [{"email": to}],
+                "subject": subject,
+                "textContent": text,
+                "htmlContent": to_html(text),
+            },
+            timeout=10,
+        )
+        response.raise_for_status()
+        return
     if not settings.resend_api_key:
         if settings.environment in ("staging", "production"):
-            raise RuntimeError("RESEND_API_KEY manquante : aucun e-mail ne peut partir.")
+            raise RuntimeError("RESEND_API_KEY ou BREVO_API_KEY manquante : aucun e-mail ne peut partir.")
         logger.info("email_not_sent_no_provider", extra={"to": to, "subject": subject, "text": text})
         return
     response = httpx.post(

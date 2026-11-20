@@ -22,6 +22,8 @@ class Settings(BaseSettings):
 
     # Sans clé Resend, les e-mails sont écrits dans les logs (développement uniquement).
     resend_api_key: str | None = None
+    # Brevo : envoie sans domaine, depuis une adresse simplement vérifiée (prioritaire sur Resend).
+    brevo_api_key: str | None = None
     email_from: str = "SOON TRADE <no-reply@soontrade.com>"
 
     # Mot de passe commun des comptes de démonstration (`python -m app.seed`, local uniquement).

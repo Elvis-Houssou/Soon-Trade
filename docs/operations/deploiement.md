@@ -98,8 +98,9 @@ et point de terminaison laissé vide.)
    | `DATABASE_URL` | l'adresse Neon **directe** de l'étape 0 |
    | `FRONTEND_URL` | `https://soon-trade.vercel.app` (adresse de l'étape 2) |
    | `CORS_ORIGINS` | `["https://soon-trade.vercel.app"]` |
-   | `RESEND_API_KEY` | ta clé Resend (de préférence une nouvelle, propre à la production) |
-   | `EMAIL_FROM` | `SupportSoonTrade <onboarding@resend.dev>` tant qu'aucun domaine n'est vérifié |
+   | `BREVO_API_KEY` | ta clé Brevo : envoie à tout le monde **sans domaine** (voir « E-mails sans domaine ») |
+   | `RESEND_API_KEY` | ou ta clé Resend, une fois un domaine vérifié (une seule des deux suffit) |
+   | `EMAIL_FROM` | avec Brevo : `SupportSoonTrade <ton-adresse-verifiee@gmail.com>` |
    | `S3_ENDPOINT_URL` | `https://<id-compte>.r2.cloudflarestorage.com` (vide pour AWS) |
    | `S3_REGION` | `auto` pour R2 (`eu-west-3` pour AWS) |
    | `S3_BUCKET` | `soontrade-documents` |
@@ -145,6 +146,21 @@ Remove-Item Env:DATABASE_URL, Env:FRONTEND_URL
    écrit dans un fichier.
 3. Ouvre le lien, choisis ton mot de passe : tu es administrateur. Invite ensuite l'équipe
    depuis **Utilisateurs et permissions**.
+
+## E-mails sans domaine (Brevo)
+
+Resend n'envoie qu'à ton adresse tant qu'aucun domaine n'est vérifié, et une adresse
+`vercel.app` ne peut pas l'être. Brevo accepte une simple adresse vérifiée :
+
+1. Crée un compte gratuit sur brevo.com (300 e-mails par jour).
+2. **Senders, Domains & Dedicated IPs → Senders → Add a sender** : ton adresse Gmail ; clique
+   le lien de confirmation reçu.
+3. **SMTP & API → API Keys → Generate a new API key** ; copie-la.
+4. Sur Render → **Environment** : ajoute `BREVO_API_KEY`, et mets
+   `EMAIL_FROM=SupportSoonTrade <ton-adresse-gmail>`. Enregistre : l'API redémarre.
+
+Limite : un expéditeur `@gmail.com` envoyé par un tiers peut arriver en indésirables.
+Avec un domaine plus tard, mets `EMAIL_FROM` sur ce domaine (vérifié chez Brevo ou Resend).
 
 ## Éviter la veille (plan gratuit)
 

@@ -30,8 +30,8 @@ def production_problems(settings: Settings) -> list[str]:
         problems.append("CORS_ORIGINS doit lister des origines https précises (jamais *).")
     if urlparse(settings.database_url.replace("+psycopg", "")).hostname in _LOCAL_HOSTS:
         problems.append("DATABASE_URL pointe vers une base locale.")
-    if not settings.resend_api_key:
-        problems.append("RESEND_API_KEY manquante : aucun e-mail ne partirait.")
+    if not (settings.resend_api_key or settings.brevo_api_key):
+        problems.append("RESEND_API_KEY ou BREVO_API_KEY manquante : aucun e-mail ne partirait.")
     if settings.s3_endpoint_url and not settings.s3_endpoint_url.startswith("https://"):
         problems.append("S3_ENDPOINT_URL doit être vide (AWS) ou en https.")
     if settings.s3_access_key_id == "local" or settings.s3_secret_access_key == "local":  # noqa: S105
