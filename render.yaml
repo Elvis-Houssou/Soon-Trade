@@ -14,7 +14,7 @@ services:
     # Migrations au démarrage, avant d'accepter du trafic : une version ne sert jamais un schéma
     # périmé (le plan gratuit n'a pas d'étape « preDeploy »). Un seul processus : 0,1 processeur.
     # --proxy-headers : l'adresse réelle du client (journal d'audit), transmise par Vercel puis Render.
-    startCommand: uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips '*'
+    startCommand: uv run --no-sync alembic upgrade head && uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips '*'
     healthCheckPath: /health/ready
     autoDeploy: false
     envVars:
