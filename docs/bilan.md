@@ -76,7 +76,7 @@ trois langues, en clair et en sombre, sur mobile et sur grand écran.
 
   En découlent : écrans Paiements, Commissions et Versements, confirmation de commande
   après paiement, rapports financiers.
-- **Mise en production** : comptes Render, Vercel et Cloudflare (R2) ; guide pas à pas dans
+- **Mise en production** : comptes Neon, Render, Vercel et Cloudflare (R2) ; guide pas à pas dans
   `docs/operations/deploiement.md` ; nom de domaine ;
   domaine vérifié dans Resend. Sans ce dernier, les e-mails ne partent qu'à l'adresse du
   compte Resend.

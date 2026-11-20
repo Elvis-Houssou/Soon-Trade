@@ -1,13 +1,13 @@
-# Déploiement sur Vercel (site) et Render (API et base)
+# Déploiement sur Vercel (site), Render (API) et Neon (base)
 
-Tout ce qui se configure dans le dépôt est prêt : `render.yaml` (API et PostgreSQL),
+Tout ce qui se configure dans le dépôt est prêt : `render.yaml` (API),
 `frontend/next.config.ts` (relais `/api`, en-têtes de sécurité). Restent les comptes et les
 clés, que **toi seul** saisis dans chaque service. Aucune clé ne va dans le dépôt.
 
 ## Comment ça s'articule
 
 ```
-Navigateur ──► soon-trade.vercel.app ──(/api/*)──► soontrade-api.onrender.com ──► PostgreSQL Render
+Navigateur ──► soon-trade.vercel.app ──(/api/*)──► soontrade-api.onrender.com ──► PostgreSQL Neon
                                                                             └──► Stockage R2 ou S3
 ```
 
@@ -19,13 +19,29 @@ reste valable.
 
 ## Coût indicatif
 
-- Render :
-  - API, plan `0.5c-512mb` (environ 7 $ par mois) : il faut un plan payant pour les
-    migrations automatiques ;
-  - PostgreSQL, plan `0.1c-256mb` (environ 6 $ par mois).
+- Render : API, plan `0.5c-512mb` (environ 7 $ par mois) ; il faut un plan payant pour
+  les migrations automatiques.
+- Neon : gratuit pour démarrer (0,5 Go). La base se met en veille après 5 min sans activité
+  et se réveille en une seconde environ à la requête suivante.
 - Vercel Hobby : gratuit (Pro si usage commercial).
 - Cloudflare R2 : gratuit jusqu'à 10 Go.
 - Resend : gratuit jusqu'à 3 000 e-mails par mois.
+
+## Étape 0 — Base PostgreSQL sur Neon
+
+1. Crée un compte sur neon.tech, puis un projet :
+   - nom : `soontrade` ;
+   - région : **AWS Europe Central 1 (Frankfurt)**, la même que l'API ;
+   - PostgreSQL 17 ou plus récent.
+2. Ouvre **Connect**, choisis la branche `main` et la base `neondb` (ou crée `soontrade`).
+3. Désactive **Connection pooling** pour obtenir l'adresse **directe** : l'hôte ne doit
+   pas contenir `-pooler`.
+4. Copie l'adresse. Elle a la forme
+   `postgresql://utilisateur:motdepasse@ep-xxx.eu-central-1.aws.neon.tech/neondb?sslmode=require`.
+   Garde-la pour l'étape 3 : c'est un secret, ne la colle nulle part ailleurs.
+
+Le préfixe `postgresql://` est converti automatiquement pour le pilote de l'API. Les
+tables sont créées par les migrations au premier déploiement.
 
 ## Étape 1 — Stockage des documents (Cloudflare R2, le plus simple)
 
@@ -66,13 +82,12 @@ et point de terminaison laissé vide.)
 ## Étape 3 — API et base sur Render
 
 1. Va sur render.com, choisis **New → Blueprint**, puis sélectionne le dépôt. Render lit
-   `render.yaml` et propose :
-   - la base `soontrade-db` ;
-   - le service `soontrade-api`.
+   `render.yaml` et propose le service `soontrade-api`.
 2. Render demande les valeurs marquées `sync: false` :
 
    | Nom | Valeur |
    |---|---|
+   | `DATABASE_URL` | l'adresse Neon **directe** de l'étape 0 |
    | `FRONTEND_URL` | `https://soon-trade.vercel.app` (adresse de l'étape 2) |
    | `CORS_ORIGINS` | `["https://soon-trade.vercel.app"]` |
    | `RESEND_API_KEY` | ta clé Resend (de préférence une nouvelle, propre à la production) |
@@ -82,7 +97,7 @@ et point de terminaison laissé vide.)
    | `S3_BUCKET` | `soontrade-documents` |
    | `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | les valeurs de l'étape 1 |
 
-3. Valide. Render crée la base, construit l'API, applique les migrations, puis la démarre.
+3. Valide. Render construit l'API, applique les migrations sur Neon, puis la démarre.
 4. Vérifie que `https://soontrade-api.onrender.com/health/ready` répond
    `{"status":"ok","database":"up"}`.
 
@@ -131,7 +146,7 @@ Les comptes de démonstration n'existent pas en production : `db:seed` y est ref
 - Render : **Rollback** vers la version précédente.
 - Vercel : **Promote** d'un déploiement antérieur.
 - Si une migration a modifié le schéma, restaure d'abord la base à l'instant voulu
-  (**Render → soontrade-db → Recovery**). Voir `sauvegardes.md`.
+  (**Neon → Backup & Restore**, restauration à un instant donné). Voir `sauvegardes.md`.
 
 ## Plus tard : nom de domaine
 
