@@ -211,7 +211,16 @@
     "step3Text": "Prices, quantities, lead times and terms. You accept, decline or ask for a change.",
     "step4Title": "We follow the order",
     "step4Text": "Payment, preparation and delivery are tracked in your space.",
-    "footer": "SOON TRADE, Abidjan, Côte d'Ivoire."
+    "contact": "Contact",
+    "contactTitle": "Let's talk about your goods",
+    "contactText": "Do you grow or sell food crops, or are you looking to buy them? Write to us: we reply quickly and open your access to the platform.",
+    "whatsapp": "Message us on WhatsApp",
+    "footerPitch": "SOON TRADE negotiates deals for producers and buyers of food crops. We find the customers, negotiate the prices and follow every sale through to delivery, in Côte d'Ivoire and worldwide.",
+    "footerNav": "Navigation",
+    "footerServices": "Our services",
+    "footerLocation": "Abidjan, Côte d'Ivoire",
+    "footerRights": "SOON TRADE. All rights reserved.",
+    "footerTagline": "Food crop trade you can trust."
   },
   "auth": {
     "email": "Email address",
@@ -764,7 +773,8 @@
       "message_from_client": "{organization} wrote ({reference})",
       "claim_opened": "New claim {reference} from {buyer}",
       "proposal_decided": "{buyer} {decision, select, accept {accepted} refuse {declined} other {asked for changes to}} proposal {reference}",
-      "offer_received": "New offer {reference} from {supplier}"
+      "offer_received": "New offer {reference} from {supplier}",
+      "contact_received": "New contact from the website: {name} ({profile, select, buyer {buyer} supplier {supplier} other {other}})"
     }
   },
   "messages": {
@@ -888,5 +898,28 @@
     "entries": "Entries",
     "system": "System",
     "more": "Load more"
+  },
+  "contact": {
+    "profile": "You are",
+    "profiles": {
+      "buyer": "Buyer",
+      "supplier": "Supplier or producer",
+      "other": "Other"
+    },
+    "name": "Full name",
+    "company": "Company or cooperative",
+    "email": "Email address",
+    "phone": "Phone or WhatsApp",
+    "message": "Your message",
+    "messageHint": {
+      "buyer": "Product, quantity, delivery place and desired timing.",
+      "supplier": "Products, available quantities, location and harvest period.",
+      "other": "Tell us in a few words what you are looking for."
+    },
+    "submit": "Send",
+    "sending": "Sending…",
+    "sent": "Thank you, your message has arrived. We will reply quickly, by email or phone.",
+    "error": "Sending failed. Try again, or call us directly.",
+    "limited": "You have sent several messages. Try again in an hour, or call us."
   }
 }

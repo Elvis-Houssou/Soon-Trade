@@ -211,7 +211,16 @@
     "step3Text": "Preise, Mengen, Fristen und Bedingungen. Sie nehmen an, lehnen ab oder bitten um Anpassung.",
     "step4Title": "Wir begleiten die Bestellung",
     "step4Text": "Zahlung, Vorbereitung und Lieferung verfolgen Sie in Ihrem Bereich.",
-    "footer": "SOON TRADE, Abidjan, Côte d'Ivoire."
+    "contact": "Kontakt",
+    "contactTitle": "Sprechen wir über Ihre Waren",
+    "contactText": "Sie bauen Agrarprodukte an oder verkaufen sie, oder Sie möchten welche kaufen? Schreiben Sie uns: Wir antworten schnell und richten Ihren Zugang zur Plattform ein.",
+    "whatsapp": "Schreiben Sie uns auf WhatsApp",
+    "footerPitch": "SOON TRADE verhandelt Geschäfte für Erzeuger und Käufer von Agrarprodukten. Wir finden die Kunden, verhandeln die Preise und begleiten jeden Verkauf bis zur Lieferung, in der Côte d'Ivoire und weltweit.",
+    "footerNav": "Navigation",
+    "footerServices": "Unsere Leistungen",
+    "footerLocation": "Abidjan, Côte d'Ivoire",
+    "footerRights": "SOON TRADE. Alle Rechte vorbehalten.",
+    "footerTagline": "Handel mit Agrarprodukten, dem Sie vertrauen können."
   },
   "auth": {
     "email": "E-Mail-Adresse",
@@ -764,7 +773,8 @@
       "message_from_client": "{organization} hat geschrieben ({reference})",
       "claim_opened": "Neue Reklamation {reference} von {buyer}",
       "proposal_decided": "{buyer} {decision, select, accept {hat das Angebot angenommen:} refuse {hat das Angebot abgelehnt:} other {bittet um Änderung am Angebot}} {reference}",
-      "offer_received": "Neue Offerte {reference} von {supplier}"
+      "offer_received": "Neue Offerte {reference} von {supplier}",
+      "contact_received": "Neuer Kontakt über die Website: {name} ({profile, select, buyer {Käufer} supplier {Lieferant} other {Sonstiges}})"
     }
   },
   "messages": {
@@ -888,5 +898,28 @@
     "entries": "Einträge",
     "system": "System",
     "more": "Mehr laden"
+  },
+  "contact": {
+    "profile": "Sie sind",
+    "profiles": {
+      "buyer": "Käufer",
+      "supplier": "Lieferant oder Erzeuger",
+      "other": "Sonstiges"
+    },
+    "name": "Vollständiger Name",
+    "company": "Unternehmen oder Genossenschaft",
+    "email": "E-Mail-Adresse",
+    "phone": "Telefon oder WhatsApp",
+    "message": "Ihre Nachricht",
+    "messageHint": {
+      "buyer": "Produkt, Menge, Lieferort und gewünschter Termin.",
+      "supplier": "Produkte, verfügbare Mengen, Ort und Erntezeit.",
+      "other": "Sagen Sie uns in wenigen Worten, was Sie suchen."
+    },
+    "submit": "Senden",
+    "sending": "Wird gesendet…",
+    "sent": "Danke, Ihre Nachricht ist angekommen. Wir antworten schnell, per E-Mail oder Telefon.",
+    "error": "Senden fehlgeschlagen. Versuchen Sie es erneut oder rufen Sie uns direkt an.",
+    "limited": "Sie haben mehrere Nachrichten gesendet. Versuchen Sie es in einer Stunde erneut oder rufen Sie uns an."
   }
 }

@@ -1,16 +1,19 @@
-import { Handshake, Search, ShieldCheck, Truck } from "lucide-react";
+import { Handshake, MapPin, MessageCircle, Phone, Search, ShieldCheck, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
-import { use } from "react";
+import { type ReactNode, use } from "react";
 import { Logo } from "@/components/brand/logo";
 import { Sheen } from "@/components/motion/motion";
 import { HomeMotion } from "@/components/motion/public-motion";
+import { ContactForm } from "@/components/public/contact-form";
+import { CurrentYear } from "@/components/public/current-year";
 import { LanguageSwitcher } from "@/components/theme/language-switcher";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { ButtonLink } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 
 const SERVICE_ICONS = [Search, Handshake, ShieldCheck, Truck];
+const PHONE = { display: "+225 05 45 22 19 19", tel: "tel:+2250545221919", whatsapp: "https://wa.me/2250545221919" };
 
 export default function HomePage({ params }: PageProps<"/[locale]">) {
   setRequestLocale(use(params).locale);
@@ -26,6 +29,7 @@ export default function HomePage({ params }: PageProps<"/[locale]">) {
           <nav aria-label={t("mainNav")} className="ml-auto hidden items-center gap-1 text-sm font-medium md:flex">
             <a href="#services" className="rounded-full px-4 py-2 transition-colors hover:bg-primary-soft">{t("services")}</a>
             <a href="#processus" className="rounded-full px-4 py-2 transition-colors hover:bg-primary-soft">{t("process")}</a>
+            <a href="#contact" className="rounded-full px-4 py-2 transition-colors hover:bg-primary-soft">{t("contact")}</a>
           </nav>
           <LanguageSwitcher className="max-md:ml-auto" />
           <ThemeToggle />
@@ -117,10 +121,95 @@ export default function HomePage({ params }: PageProps<"/[locale]">) {
               ))}
             </ol>
           </section>
+
+          <section id="contact" className="scroll-mt-8 border-t border-border py-16">
+            <div className="grid gap-10 lg:grid-cols-[2fr_3fr]">
+              <div>
+                <h2 data-m="reveal" className="text-3xl font-bold">{t("contactTitle")}</h2>
+                <p className="mt-3 text-muted-foreground">{t("contactText")}</p>
+                <ul className="mt-6 space-y-3 font-semibold">
+                  <li>
+                    <a href={PHONE.tel} className="inline-flex items-center gap-3 hover:text-primary">
+                      <span className="grid size-10 place-items-center rounded-control bg-primary-soft text-primary-soft-foreground">
+                        <Phone className="size-4" aria-hidden />
+                      </span>
+                      {PHONE.display}
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href={PHONE.whatsapp}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-3 hover:text-primary"
+                    >
+                      <span className="grid size-10 place-items-center rounded-control bg-primary-soft text-primary-soft-foreground">
+                        <MessageCircle className="size-4" aria-hidden />
+                      </span>
+                      {t("whatsapp")}
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <ContactForm />
+            </div>
+          </section>
         </main>
 
-        <footer className="border-t border-border py-8 text-sm text-muted-foreground">{t("footer")}</footer>
+        <footer className="mb-6 rounded-panel border border-border bg-surface px-6 py-10 sm:px-10">
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1.2fr_1.3fr]">
+            <div>
+              <Logo className="w-[10em]" />
+              <p className="mt-4 max-w-sm text-muted-foreground">{t("footerPitch")}</p>
+              <p className="mt-4 inline-block rounded-full bg-primary-soft px-3 py-1 text-xs font-semibold text-primary-soft-foreground">
+                {t("badge")}
+              </p>
+            </div>
+            <FooterColumn title={t("footerNav")}>
+              <a href="#services" className="hover:text-primary">{t("services")}</a>
+              <a href="#processus" className="hover:text-primary">{t("process")}</a>
+              <a href="#contact" className="hover:text-primary">{t("contact")}</a>
+              <Link href="/connexion" className="hover:text-primary">{t("login")}</Link>
+            </FooterColumn>
+            <FooterColumn title={t("footerServices")}>
+              {[1, 2, 3, 4].map((n) => (
+                <a key={n} href="#services" className="hover:text-primary">{t(`service${n}Title`)}</a>
+              ))}
+            </FooterColumn>
+            <FooterColumn title={t("contact")}>
+              <a href={PHONE.tel} className="inline-flex items-center gap-2 hover:text-primary">
+                <Phone className="size-4 shrink-0" aria-hidden />
+                {PHONE.display}
+              </a>
+              <a href={PHONE.whatsapp} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-primary">
+                <MessageCircle className="size-4 shrink-0" aria-hidden />
+                WhatsApp
+              </a>
+              <span className="inline-flex items-center gap-2">
+                <MapPin className="size-4 shrink-0" aria-hidden />
+                {t("footerLocation")}
+              </span>
+            </FooterColumn>
+          </div>
+          <div className="mt-10 flex flex-wrap justify-between gap-x-6 gap-y-2 border-t border-border pt-6 text-sm text-muted-foreground">
+            <span>
+              © <CurrentYear /> {t("footerRights")}
+            </span>
+            <span>{t("footerTagline")}</span>
+          </div>
+        </footer>
       </div>
     </HomeMotion>
+  );
+}
+
+function FooterColumn({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div>
+      <h2 className="text-sm font-bold uppercase tracking-wider">{title}</h2>
+      <nav aria-label={title} className="mt-4 flex flex-col gap-3 text-muted-foreground">
+        {children}
+      </nav>
+    </div>
   );
 }
